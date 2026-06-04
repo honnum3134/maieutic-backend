@@ -1,25 +1,13 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,   // Gmail App Password (not your Gmail password)
-  },
-});
-
-/**
- * Send an email
- * @param {string} to - recipient email
- * @param {string} subject - email subject
- * @param {string} html - email body (HTML string)
- */
-const sendEmail = async (to, subject, html) => {
-  await transporter.sendMail({
-    from: `"Maieutic Edutech" <${process.env.EMAIL_USER}>`,
+const sendEmail = async (to, subject, html, attachments = []) => {
+  await resend.emails.send({
+    from: 'Maieutic Edutech <onboarding@resend.dev>',
     to,
     subject,
     html,
+    ...(attachments.length > 0 && { attachments }),
   });
 };
 

@@ -2,8 +2,8 @@ const multer = require('multer');
 const path   = require('path');
 const fs     = require('fs');
 
-/* Make sure uploads folder exists */
-const uploadDir = path.join(__dirname, '../uploads');
+// ✅ Use /tmp on Railway — ../uploads doesn't persist and may not be writable
+const uploadDir = '/tmp/uploads';
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
@@ -17,15 +17,12 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
   const allowed = ['.pdf', '.doc', '.docx'];
   const ext = path.extname(file.originalname).toLowerCase();
-  if (allowed.includes(ext)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only PDF, DOC, DOCX files allowed'), false);
-  }
+  if (allowed.includes(ext)) cb(null, true);
+  else cb(new Error('Only PDF, DOC, DOCX files allowed'), false);
 };
 
 module.exports = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
