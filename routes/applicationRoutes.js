@@ -42,7 +42,7 @@ router.post('/', (req, res) => {
 
       // 3. Send email with resume attached
       await resend.emails.send({
-        from: 'Maieutic Edutech <onboarding@resend.dev>',
+        from: 'Maieutic Edutech <info@maieuticedutech.com>',
         to: process.env.HR_EMAIL,
         subject: `📄 New Job Application — ${role} — ${fullName}`,
         html: `

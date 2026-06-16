@@ -3,7 +3,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async (to, subject, html, attachments = []) => {
   await resend.emails.send({
-    from: 'Maieutic Edutech <onboarding@resend.dev>',
+    from: 'Maieutic Edutech <info@maieuticedutech.com>',
     to,
     subject,
     html,
