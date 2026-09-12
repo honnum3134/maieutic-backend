@@ -59,9 +59,9 @@ Open the .env file and replace the values:
 ```
 PORT=5000
 MONGO_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/maieuticDB
-EMAIL_USER=your@gmail.com
-EMAIL_PASS=xxxx xxxx xxxx xxxx   ← Gmail App Password
-FRONTEND_URL=http://localhost:3000
+RESEND_API_KEY=re_xxxxxxxx           ← from https://resend.com/api-keys (required, server exits without it)
+HR_EMAIL=hr@maieuticedutech.com
+FRONTEND_URL=https://maieuticedutech.com,https://www.maieuticedutech.com
 ```
 
 ---
@@ -164,10 +164,17 @@ const handleSubmit = async (e) => {
 
 ---
 
-## Deployment on Railway (free)
-1. Go to https://railway.app and sign up with GitHub
-2. Click "New Project" → "Deploy from GitHub repo"
-3. Push your backend folder to GitHub first
-4. Add environment variables in Railway dashboard (same as .env)
-5. Railway gives you a live URL like: https://maieutic-backend.up.railway.app
-6. Replace http://localhost:5000 with that URL in your frontend
+## Deployment on Railway
+1. Go to https://railway.app and sign in.
+2. New Project → Deploy from GitHub repo → pick the backend repo.
+3. Service → Variables: add MONGO_URI, RESEND_API_KEY, HR_EMAIL and FRONTEND_URL
+   (comma-separated list of allowed site origins). PORT is injected by Railway.
+4. Service → Settings → Networking → Generate Domain. Copy the public URL
+   (e.g. https://backend-production-xxxx.up.railway.app).
+5. Confirm it is alive: open <that URL>/health — it must return
+   {"status":"ok","service":"maieutic-backend","db":"connected"}.
+6. Put that URL in the frontend as VITE_API_BASE_URL (frontend/.env.example)
+   or as the default in frontend/src/lib/api.js, rebuild and redeploy the frontend.
+
+If the Railway domain ever changes, only step 6 needs repeating — the frontend
+reads the backend URL from one place.
