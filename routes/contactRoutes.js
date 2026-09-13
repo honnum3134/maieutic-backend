@@ -1,6 +1,7 @@
 const express   = require('express');
 const router    = express.Router();
 const Contact   = require('../models/Contact');
+const requireKey = require('../middleware/requireKey');
 const sendEmail = require('../middleware/mailer');
 
 router.post('/', async (req, res) => {
@@ -37,7 +38,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+router.get('/', requireKey, async (req, res) => {
   try {
     const contacts = await Contact.find().sort({ createdAt: -1 });
     res.json({ success: true, data: contacts });

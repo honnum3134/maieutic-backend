@@ -13,6 +13,10 @@ if (missing.length) {
   process.exit(1);
 }
 
+if (!process.env.LEADS_SHEET_KEY) {
+  console.warn('⚠️  LEADS_SHEET_KEY is not set — /leadssheet and the GET list endpoints will refuse requests until it is.');
+}
+
 const app = express();
 
 /* ─── CORS ───
@@ -53,6 +57,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/contact',     require('./routes/contactRoutes'));
 app.use('/api/enquiry',     require('./routes/enquiryRoutes'));
 app.use('/api/application', require('./routes/applicationRoutes'));
+app.use('/api/lead',        require('./routes/leadRoutes'));
+
+/* ─── Leads Excel export ───
+ * GET /leadssheet?key=<LEADS_SHEET_KEY> downloads one workbook with four
+ * sheets (Apply Now, Contact Us, Enquire Now, Lead Popup). /api/leadssheet is
+ * the same route under the API prefix. See routes/exportRoutes.js.
+ */
+app.use('/leadssheet',     require('./routes/exportRoutes'));
+app.use('/api/leadssheet', require('./routes/exportRoutes'));
 
 /* ─── Health checks ─── */
 const health = (req, res) => {

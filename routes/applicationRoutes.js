@@ -4,6 +4,7 @@ const multer      = require('multer');
 const fs          = require('fs');
 const { Resend }  = require('resend');
 const Application = require('../models/Application');
+const requireKey = require('../middleware/requireKey');
 const upload      = require('../middleware/upload');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -77,7 +78,7 @@ router.post('/', (req, res) => {
   });
 });
 
-router.get('/', async (req, res) => {
+router.get('/', requireKey, async (req, res) => {
   try {
     const applications = await Application.find().sort({ createdAt: -1 });
     res.json({ success: true, data: applications });

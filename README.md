@@ -9,14 +9,18 @@ maieutic-backend/
 ├── models/
 │   ├── Contact.js             ← contact form schema
 │   ├── Enquiry.js             ← enquiry form schema
-│   └── Application.js        ← job application schema
+│   ├── Application.js        ← job application schema
+│   └── Lead.js                ← homepage popup lead schema
 ├── routes/
 │   ├── contactRoutes.js       ← POST /api/contact
 │   ├── enquiryRoutes.js       ← POST /api/enquiry
-│   └── applicationRoutes.js  ← POST /api/application
+│   ├── applicationRoutes.js  ← POST /api/application
+│   ├── leadRoutes.js          ← POST /api/lead  (LeadPopup)
+│   └── exportRoutes.js        ← GET  /leadssheet (Excel, 4 sheets)
 ├── middleware/
 │   ├── upload.js              ← multer resume upload handler
-│   └── mailer.js              ← nodemailer email sender
+│   ├── mailer.js              ← Resend email sender
+│   └── requireKey.js          ← ?key= guard for lead-data endpoints
 └── uploads/                   ← resume files saved here
 ```
 
@@ -62,6 +66,7 @@ MONGO_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/m
 RESEND_API_KEY=re_xxxxxxxx           ← from https://resend.com/api-keys (required, server exits without it)
 HR_EMAIL=hr@maieuticedutech.com
 FRONTEND_URL=https://maieuticedutech.com,https://www.maieuticedutech.com
+LEADS_SHEET_KEY=<long random string>   <- protects /leadssheet and the GET list endpoints
 ```
 
 ---
@@ -161,14 +166,47 @@ const handleSubmit = async (e) => {
 | GET  | /api/enquiry | Get all enquiries |
 | POST | /api/application | Submit job application + resume |
 | GET  | /api/application | Get all applications |
+| POST | /api/lead | Submit homepage popup lead |
+| GET  | /api/lead | Get all popup leads |
+| GET  | /leadssheet | Download Excel workbook of every form (see below) |
+
+`GET` list endpoints and `/leadssheet` require the access key: `?key=<LEADS_SHEET_KEY>`
+(or header `x-leads-key`). Without the key they return 401; if the variable is not set
+on the server they return 503.
+
+---
+
+## Leads Excel download
+Open in a browser (the file downloads directly):
+
+```
+https://maieuticedutech.com/leadssheet?key=<LEADS_SHEET_KEY>
+```
+That site page forwards to the backend export, which can also be opened directly:
+```
+https://maieutic-backend-production.up.railway.app/leadssheet?key=<LEADS_SHEET_KEY>
+```
+Opening `https://maieuticedutech.com/leadssheet` without a key shows a small form to enter it.
+
+The workbook `Maieutic_Leads_<YYYY-MM-DD>.xlsx` has four sheets, newest entries first:
+
+| Sheet | Source | Columns |
+|-------|--------|---------|
+| Apply Now | /api/application | S.No, Full Name, Email, Phone, Role Applied, Experience, LinkedIn, Cover Letter, Resume File, Status, Submitted At (IST) |
+| Contact Us | /api/contact | S.No, Name, Email, Subject, Message, Submitted At (IST) |
+| Enquire Now | /api/enquiry | S.No, Name, Email, Phone, Area of Interest, Message, Submitted At (IST) |
+| Lead Popup | /api/lead | S.No, Name, Phone, Email, Page, Submitted At (IST) |
+
+To change the key: update `LEADS_SHEET_KEY` in Railway -> Variables and redeploy.
 
 ---
 
 ## Deployment on Railway
 1. Go to https://railway.app and sign in.
 2. New Project → Deploy from GitHub repo → pick the backend repo.
-3. Service → Variables: add MONGO_URI, RESEND_API_KEY, HR_EMAIL and FRONTEND_URL
-   (comma-separated list of allowed site origins). PORT is injected by Railway.
+3. Service → Variables: add MONGO_URI, RESEND_API_KEY, HR_EMAIL, FRONTEND_URL
+   (comma-separated list of allowed site origins) and LEADS_SHEET_KEY.
+   PORT is injected by Railway.
 4. Service → Settings → Networking → Generate Domain. Copy the public URL
    (e.g. https://backend-production-xxxx.up.railway.app).
 5. Confirm it is alive: open <that URL>/health — it must return
